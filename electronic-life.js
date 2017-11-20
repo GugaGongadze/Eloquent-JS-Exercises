@@ -28,7 +28,7 @@ function Grid(width, height) {
 }
 Grid.prototype.isInside = function(vector) {
   return vector.x >= 0 && 
-         vector.x < this.width && 
+         vector.x < this.width &&
          vector.y >= 0 && 
          vector.y < this.height;
 };
@@ -37,17 +37,8 @@ Grid.prototype.get = function(vector) {
 };
 Grid.prototype.set = function(vector, value) {
   this.space[vector.x + this.width * vector.y] = value;
-}
-Grid.prototype.forEach = function(f, context) {
-  for (var y = 0; y < this.height; y++) {
-    for (var x = 0; x < this.width; x++) {
-      var value = this.space[x + y * this.width];
-      if (value != null) {
-        f.call(context, value, new Vector(x, y));
-      }
-    }
-  }
 };
+
 
 var directions = {
   'n': new Vector(0, -1),
@@ -61,26 +52,24 @@ var directions = {
 };
 
 function randomElement(array) {
-  return array[Math.floor(Math.random() * array.length)]
+  return array[Math.floor(Math.random() * array.length)];
 }
 
-var directionNames = 'n ne e se s sw w nw'.split(' ');
+var directionNames = "n ne e se s sw w nw".split(" ");
 
 function BouncingCritter() {
   this.direction = randomElement(directionNames);
-}
+};
 
 BouncingCritter.prototype.act = function(view) {
-  if (view.look(this.direction) != ' ') {
-    this.direction = view.find(' ') || 's';
-  }
-  return {type: 'move', direction: this.direction};
+  if (view.look(this.direction) != " ")
+    this.direction = view.find(" ") || "s";
+  return {type: "move", direction: this.direction};
 };
 
 function elementFromChar(legend, ch) {
-  if (ch == ' ') {
+  if (ch == " ")
     return null;
-  }
   var element = new legend[ch]();
   element.originChar = ch;
   return element;
@@ -89,32 +78,47 @@ function World(map, legend) {
   var grid = new Grid(map[0].length, map.length);
   this.grid = grid;
   this.legend = legend;
-  
+
   map.forEach(function(line, y) {
-    for (var x = 0; x < line.length; x++) {
-      grid.set(new Vector(x, y), elementFromChar(legend, line[x]));
-    }
+    for (var x = 0; x < line.length; x++)
+      grid.set(new Vector(x, y),
+               elementFromChar(legend, line[x]));
   });
 }
 
 function charFromElement(element) {
-  if (element == null) {
-    return ' ';
-  } else {
+  if (element == null)
+    return " ";
+  else
     return element.originChar;
-  }
 }
 
 World.prototype.toString = function() {
-  var output = '';
+  var output = "";
   for (var y = 0; y < this.grid.height; y++) {
     for (var x = 0; x < this.grid.width; x++) {
       var element = this.grid.get(new Vector(x, y));
       output += charFromElement(element);
     }
-    output += '\n';
+    output += "\n";
   }
   return output;
+};
+
+function Wall() {}
+
+var world = new World(plan, {"#": Wall,
+"o": BouncingCritter});
+
+Grid.prototype.forEach = function(f, context) {
+  for (var y = 0; y < this.height; y++) {
+    for (var x = 0; x < this.width; x++) {
+      var value = this.space[x + y * this.width];
+      if (value != null) {
+        f.call(context, value, new Vector(x, y));
+      }
+    }
+  }
 };
 
 World.prototype.turn = function() {
@@ -127,13 +131,13 @@ World.prototype.turn = function() {
   }, this);
 };
 
-World.prototype.letAct = function(critter, vetor) {
-  var action = critter.act(new View(this, Vector));
-  if (action && action.type == 'move') {
+World.prototype.letAct = function(critter, vector) {
+  var action = critter.act(new View(this, vector));
+  if (action && action.type == "move") {
     var dest = this.checkDestination(action, vector);
     if (dest && this.grid.get(dest) == null) {
       this.grid.set(vector, null);
-      this.grid.set(dest.critter);
+      this.grid.set(dest, critter);
     }
   }
 };
@@ -154,13 +158,11 @@ function View(world, vector) {
 
 View.prototype.look = function(dir) {
   var target = this.vector.plus(directions[dir]);
-  if (this.world.grid.isInside(target)) {
+  if (this.world.grid.isInside(target))
     return charFromElement(this.world.grid.get(target));
-  } else {
-    return '#';
-  }
+  else
+    return "#";
 };
-
 View.prototype.findAll = function(ch) {
   var found = [];
   for (var dir in directions) {
@@ -185,69 +187,34 @@ function Wall() {}
 var world = new World(plan, {"#": Wall,
                              "o": BouncingCritter});
 
+
 // console.log(world.toString());
 
 for (var i = 0; i < 5; i++) {
   world.turn();
   console.log(world.toString());
 }
-/*
-Exception: TypeError: this.vector.plus is not a function
-View.prototype.look@Scratchpad/3:154:16
-BouncingCritter.prototype.act@Scratchpad/3:72:7
-World.prototype.letAct@Scratchpad/3:129:16
-World.prototype.turn/<@Scratchpad/3:123:7
-Grid.prototype.forEach@Scratchpad/3:44:9
-World.prototype.turn@Scratchpad/3:120:3
-@Scratchpad/3:189:3
-*/
-/*
-Exception: TypeError: this.vector.plus is not a function
-View.prototype.look@Scratchpad/3:154:16
-BouncingCritter.prototype.act@Scratchpad/3:72:7
-World.prototype.letAct@Scratchpad/3:129:16
-World.prototype.turn/<@Scratchpad/3:123:7
-Grid.prototype.forEach@Scratchpad/3:44:9
-World.prototype.turn@Scratchpad/3:120:3
-@Scratchpad/3:189:3
-*/
-/*
-Exception: TypeError: this.vector.plus is not a function
-View.prototype.look@Scratchpad/3:154:16
-BouncingCritter.prototype.act@Scratchpad/3:72:7
-World.prototype.letAct@Scratchpad/3:129:16
-World.prototype.turn/<@Scratchpad/3:123:7
-Grid.prototype.forEach@Scratchpad/3:44:9
-World.prototype.turn@Scratchpad/3:120:3
-@Scratchpad/3:189:3
-*/
-/*
-Exception: TypeError: this.vector.plus is not a function
-View.prototype.look@Scratchpad/3:154:16
-BouncingCritter.prototype.act@Scratchpad/3:72:7
-World.prototype.letAct@Scratchpad/3:129:16
-World.prototype.turn/<@Scratchpad/3:123:7
-Grid.prototype.forEach@Scratchpad/3:44:9
-World.prototype.turn@Scratchpad/3:120:3
-@Scratchpad/3:189:3
-*/
-/*
-Exception: TypeError: this.vector.plus is not a function
-View.prototype.look@Scratchpad/3:156:16
-BouncingCritter.prototype.act@Scratchpad/3:74:7
-World.prototype.letAct@Scratchpad/3:131:16
-World.prototype.turn/<@Scratchpad/3:125:7
-Grid.prototype.forEach@Scratchpad/3:46:9
-World.prototype.turn@Scratchpad/3:122:3
-@Scratchpad/3:191:3
-*/
-/*
-Exception: ReferenceError: target is not defined
-View.prototype.look@Scratchpad/3:157:1
-BouncingCritter.prototype.act@Scratchpad/3:74:7
-World.prototype.letAct@Scratchpad/3:131:16
-World.prototype.turn/<@Scratchpad/3:125:7
-Grid.prototype.forEach@Scratchpad/3:46:9
-World.prototype.turn@Scratchpad/3:122:3
-@Scratchpad/3:191:3
-*/
+
+function dirPlus(dir, n) {
+  var index = directNames.indexOf(dir);
+  return directionNames[(index + n + 8) % 8];
+}
+
+function WallFollower() {
+  this.dir = 's';
+}
+
+WallFollower.prototype.act = function(view) {
+  var start = this.dir;
+  if (view.look(dirPlus(this.dir, -3))) != ' ' {
+    start = this.dir = dirPlus(this.dir, -2);
+  }
+  while (view.look(this.dir) != ' ') {
+    this.dir = dirPlus(this.dir, 1);
+    if (this.dir == start) break;
+  }
+  return {
+    type: 'move',
+    direction: this.dir
+  };
+};
