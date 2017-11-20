@@ -1,11 +1,3 @@
-/*
- * This is a JavaScript Scratchpad.
- *
- * Enter some JavaScript, then Right Click or choose from the Execute Menu:
- * 1. Run to evaluate the selected text (Ctrl+R),
- * 2. Inspect to bring up an Object Inspector on the result (Ctrl+I), or,
- * 3. Display to insert the result in a comment after the selection. (Ctrl+L)
- */
 function rowHeights(rows) {
   return rows.map(function (row) {
     return row.reduce(function (max, cell) {
@@ -13,6 +5,7 @@ function rowHeights(rows) {
     }, 0);
   });
 }
+
 function colWidths(rows) {
   return rows[0].map(function (_, i) {
     return rows.reduce(function (max, row) {
@@ -20,16 +13,17 @@ function colWidths(rows) {
     }, 0);
   });
 }
+
 function drawTable(rows) {
   var heights = rowHeights(rows);
   var widths = colWidths(rows);
-  
+
   function drawLine(blocks, lineNo) {
     return blocks.map(function (block) {
       return block[lineNo];
     }).join(' ');
   }
-  
+
   function drawRow(row, rowNum) {
     var blocks = row.map(function (cell, colNum) {
       return cell.draw(widths[colNum], heights[rowNum]);
@@ -48,6 +42,7 @@ function repeat(string, times) {
   }
   return result;
 }
+
 function TextCell(text) {
   this.text = text.split('\n');
 }
@@ -60,100 +55,80 @@ TextCell.prototype.minHeight = function () {
   return this.text.length;
 };
 TextCell.prototype.draw = function (width, height) {
-  var result = [
-  ];
+  var result = [];
   for (var i = 0; i < height; i++) {
     var line = this.text[i] || '';
     result.push(line + repeat(' ', width - line.length));
   }
   return result;
 }
-// var rows = [
-// ];
-// for (var i = 0; i < 5; i++) {
-//   var row = [
-//   ];
-//   for (var j = 0; j < 5; j++) {
-//     if ((j + i) % 2 == 0) {
-//       row.push(new TextCell('##'));
-//     } else {
-//       row.push(new TextCell('  '));
-//     }
-//   }
-//   rows.push(row);
-// }
-// console.log(drawTable(rows));
 
-var MOUNTAINS = [
-  {name: "Kilimanjaro", height: 5895, country: "Tanzania"},
-  {name: "Everest", height: 8848, country: "Nepal"},
-  {name: "Mount Fuji", height: 3776, country: "Japan"},
-  {name: "Mont Blanc", height: 4808, country: "Italy/France"},
-  {name: "Vaalserberg", height: 323, country: "Netherlands"},
-  {name: "Denali", height: 6168, country: "United States"},
-  {name: "Popocatepetl", height: 5465, country: "Mexico"}
+var MOUNTAINS = [{
+    name: "Kilimanjaro",
+    height: 5895,
+    country: "Tanzania"
+  },
+  {
+    name: "Everest",
+    height: 8848,
+    country: "Nepal"
+  },
+  {
+    name: "Mount Fuji",
+    height: 3776,
+    country: "Japan"
+  },
+  {
+    name: "Mont Blanc",
+    height: 4808,
+    country: "Italy/France"
+  },
+  {
+    name: "Vaalserberg",
+    height: 323,
+    country: "Netherlands"
+  },
+  {
+    name: "Denali",
+    height: 6168,
+    country: "United States"
+  },
+  {
+    name: "Popocatepetl",
+    height: 5465,
+    country: "Mexico"
+  }
 ];
 
 if (typeof module != "undefined" && module.exports)
   module.exports = MOUNTAINS;
 
-// console.log(MOUNTAINS)
-
 function UnderlinedCell(inner) {
   this.inner = inner
 }
 
-UnderlinedCell.prototype.minWidth = function() {
+UnderlinedCell.prototype.minWidth = function () {
   return this.inner.minWidth();
 };
 
-UnderlinedCell.prototype.minHeight = function() {
+UnderlinedCell.prototype.minHeight = function () {
   return this.inner.minHeight() + 1;
 };
 
-UnderlinedCell.prototype.draw = function(width, height) {
+UnderlinedCell.prototype.draw = function (width, height) {
   return this.inner.draw(width, height - 1).concat([repeat("-", width)]);
 };
 
 function dataTable(data) {
   var keys = Object.keys(data[0]);
-  var headers = keys.map(function(name) {
+  var headers = keys.map(function (name) {
     return new UnderlinedCell(new TextCell(name));
   });
-  
-  var body = data.map(function(row) {
-    return keys.map(function(name) {
+
+  var body = data.map(function (row) {
+    return keys.map(function (name) {
       return new TextCell(String(row[name]));
     });
   });
   return [headers].concat(body);
 }
-
-console.log(drawTable(dataTable(MOUNTAINS)));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

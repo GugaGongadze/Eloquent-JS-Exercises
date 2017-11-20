@@ -1,6 +1,7 @@
 function logFive(obj) {
   this.obj = obj;
 }
+
 function ArraySeq(array) {
   this.array = array;
   if (this.array.length <= 5) {
@@ -13,6 +14,7 @@ function ArraySeq(array) {
     }
   }
 }
+
 function RangeSeq(from, to) {
   this.from = from;
   this.to = to;
@@ -26,4 +28,3 @@ function RangeSeq(from, to) {
     }
   }
 }
-logFive(new RangeSeq(100, 103));
