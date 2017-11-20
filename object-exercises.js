@@ -1,3 +1,5 @@
+'use strict'
+
 function logFive(obj) {
   this.obj = obj;
 }

@@ -1,3 +1,5 @@
+'use strict'
+
 function rowHeights(rows) {
   return rows.map(function (row) {
     return row.reduce(function (max, cell) {

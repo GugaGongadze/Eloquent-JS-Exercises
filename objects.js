@@ -1,3 +1,5 @@
+'use strict'
+
 var MOUNTAINS = [{
     name: "Kilimanjaro",
     height: 5895,
