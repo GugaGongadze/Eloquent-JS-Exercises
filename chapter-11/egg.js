@@ -23,9 +23,13 @@ function parseExpression(program) {
 }
 
 function skipSpace(string) {
-    var first = string.search(/\S/);
-    if (first == -1) return "";
-    return string.slice(first);
+    var first = string.match(/(\s|#)*.*/);
+    console.log(first);
+    if (first) {
+        return string.slice(first.length);
+    } else {
+        return "";
+    }
 }
 
 function parseApply(expr, program) {
@@ -125,9 +129,10 @@ specialForms["define"] = function (args, env) {
     return value;
 };
 
-specialForms["fun"] = function(args, env) {
+specialForms["fun"] = function (args, env) {
     if (!args.length)
         throw new SyntaxError("Functions need a body");
+
     function name(expr) {
         if (expr.type != "word")
             throw new SyntaxError("arg names must be words");
@@ -136,11 +141,11 @@ specialForms["fun"] = function(args, env) {
     var argNames = args.slice(0, args.length - 1).map(name);
     var body = args[args.length - 1];
 
-    return function() {
+    return function () {
         if (arguments.length != argNames.length)
             throw new TypeError("Wrong number of arguments");
         var localEnv = Object.create(env);
-        for (var i = 0; i <arguments.length; i++)
+        for (var i = 0; i < arguments.length; i++)
             localEnv[argNames[i]] = arguments[i];
         return evaluate(body, localEnv);
     };
@@ -151,16 +156,16 @@ var topEnv = Object.create(null);
 topEnv["true"] = true;
 topEnv["false"] = false;
 
-["+", "-", "*", "/", "==", "<", ">"].forEach(function(op) {
+["+", "-", "*", "/", "==", "<", ">"].forEach(function (op) {
     topEnv[op] = new Function("a, b", "return a " + op + " b;");
 });
 
-topEnv["print"] = function(value) {
+topEnv["print"] = function (value) {
     console.log(value);
     return value;
 };
 
-topEnv["array"] = function() {
+topEnv["array"] = function () {
     var arr = [];
     var args = Array.prototype.slice.call(arguments);
     for (var i = 0; i < args.length; i++) {
@@ -169,11 +174,11 @@ topEnv["array"] = function() {
     return arr;
 };
 
-topEnv["length"] = function(array) {
+topEnv["length"] = function (array) {
     return array.length;
 }
 
-topEnv["element"] = function(array, i) {
+topEnv["element"] = function (array, i) {
     return array[i];
 }
 
@@ -183,11 +188,4 @@ function run() {
     return evaluate(parse(program), env);
 }
 
-run("do(define(sum, fun(array,",
-"     do(define(i, 0),",
-"        define(sum, 0),",
-"        while(<(i, length(array)),",
-"          do(define(sum, +(sum, element(array, i))),",
-"             define(i, +(i, 1)))),",
-"        sum))),",
-"   print(sum(array(1, 2, 3, 4))))");
+console.log(parse("# hello\nx"));
