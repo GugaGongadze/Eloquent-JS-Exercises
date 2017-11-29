@@ -160,17 +160,34 @@ topEnv["print"] = function(value) {
     return value;
 };
 
+topEnv["array"] = function() {
+    var arr = [];
+    var args = Array.prototype.slice.call(arguments);
+    for (var i = 0; i < args.length; i++) {
+        arr.push(args[i]);
+    }
+    return arr;
+};
+
+topEnv["length"] = function(array) {
+    return array.length;
+}
+
+topEnv["element"] = function(array, i) {
+    return array[i];
+}
+
 function run() {
     var env = Object.create(topEnv);
     var program = Array.prototype.slice.call(arguments, 0).join("\n");
     return evaluate(parse(program), env);
 }
 
-run("do(define(plusOne, fun(a, +(a, 1))),",
-    "   print(plusOne(10)))");
-
-// run("do(define(pow, fun(base, exp,",
-//     "     if(==(exp, 0),",
-//     "        1,",
-//     "        *(base, pow(base, -(exp, 1)))))),",
-//     "   print(pow(2, 10)))");
+run("do(define(sum, fun(array,",
+"     do(define(i, 0),",
+"        define(sum, 0),",
+"        while(<(i, length(array)),",
+"          do(define(sum, +(sum, element(array, i))),",
+"             define(i, +(i, 1)))),",
+"        sum))),",
+"   print(sum(array(1, 2, 3, 4))))");
