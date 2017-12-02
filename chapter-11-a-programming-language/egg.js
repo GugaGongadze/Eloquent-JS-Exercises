@@ -23,13 +23,8 @@ function parseExpression(program) {
 }
 
 function skipSpace(string) {
-    var first = string.match(/(\s|#)*.*/);
-    console.log(first);
-    if (first) {
-        return string.slice(first.length);
-    } else {
-        return "";
-    }
+    var first = string.match(/^(#|\s.*)*/);
+    return string.slice(first[0].length);
 }
 
 function parseApply(expr, program) {
@@ -129,6 +124,23 @@ specialForms["define"] = function (args, env) {
     return value;
 };
 
+specialForms["set"] = function (args, env) {
+    if (args.length != 2 || args[0].type != "word")
+        throw new SyntaxError("Bad use of set");
+    var value = evaluate(args[1], env);
+    var name = args[0].name;
+
+    for (var scope = env; scope; scope = Object.getPrototypeOf(scope)) {
+        if (Object.prototype.hasOwnProperty.call(scope, name)) {
+            scope[name] = value;
+            return value;
+        }
+    }
+    throw new ReferenceError("Undefined variable" + name);
+
+
+};
+
 specialForms["fun"] = function (args, env) {
     if (!args.length)
         throw new SyntaxError("Functions need a body");
@@ -187,5 +199,3 @@ function run() {
     var program = Array.prototype.slice.call(arguments, 0).join("\n");
     return evaluate(parse(program), env);
 }
-
-console.log(parse("# hello\nx"));
