@@ -40,6 +40,34 @@ function Level(plan) {
 Level.prototype.isFinished = function() {
     return this.status != null && this.finishDelay < 0;
 };
+Level.prototype.obstacleAt = function(pos, size) {
+    var xStart = Math.floor(pos.x);
+    var xEnd = Math.floor(pos.x + size.x);
+    var yStart = Math.floor(pos.y);
+    var yEnd = Math.floor(pos.y + size.y);
+
+    if (xStart < 0 || xEnd > this.width || yStart < 0)
+        return 'wall';
+    if (yEnd > this.height)
+        return 'lava';
+    for (var y = yStart; y < yEnd; y++) {
+        for (var x = xStart; x < xEnd; x++) {
+            var fieldType = this.grid[x][y];
+            if (fieldType) return fieldType;
+        }
+    }
+};
+Level.prototype.actorAt = function(actor) {
+    for (var i = 0; i < this.actors.length; i++) {
+        var other = this.actors[i];
+        if (other != actor &&
+            actor.pos.x + actor.size.x > other.pos.x &&
+            actor.pos.x < other.pos.x + other.size.x &&
+            actor.pos.y + actor.size.y > other.pos.y &&
+            actor.pos.y < other.pos.y + other.size.y)
+            return other;
+    }
+};
 
 function Vector(x, y) {
     this.x = x;
@@ -137,14 +165,14 @@ DOMDisplay.prototype.drawFrame = function() {
 DOMDisplay.prototype.scrollPlayerIntoView = function() {
     var width = this.wrap.clientWidth;
     var height = this.wrap.clientHeight;
-    var marging = width / 3;
+    var margin = width / 3;
 
     // The Viewport
     var left = this.wrap.scrollLeft, right = left + width;
     var top = this.wrap.scrollTop, bottom = top + height;
 
     var player = this.level.player;
-    var center = player.pos.plus(Player.size.times(0.5))
+    var center = player.pos.plus(player.size.times(0.5))
                            .times(scale);
 
     if (center.x < left + margin)
