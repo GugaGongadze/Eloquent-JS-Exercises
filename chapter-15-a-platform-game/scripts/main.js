@@ -449,7 +449,8 @@ Level.prototype.playerTouched = function (type, actor) {
 var arrowCodes = {
     37: "left",
     38: "up",
-    39: "right"
+    39: "right",
+    27: 'esc'
 };
 
 function trackKeys(codes) {
@@ -464,6 +465,12 @@ function trackKeys(codes) {
     }
     addEventListener("keydown", handler);
     addEventListener("keyup", handler);
+
+    pressed.unregister = function() {
+        removeEventListener('keydown', handler);
+        removeEventListener('keyup', handler);
+    }
+
     return pressed;
 }
 
@@ -487,16 +494,32 @@ var arrows = trackKeys(arrowCodes);
 
 function runLevel(level, Display, andThen) {
     var display = new Display(document.body, level);
-    runAnimation(function (step) {
+    var paused = false;
+
+    function handleKey(event) {
+        if (event.keyCode == 27) {
+            paused = !paused;
+            runAnimation(animation);
+        }
+    }
+    addEventListener("keydown", handleKey);
+    function animation(step) {
+        if (paused == true) {
+            return false;
+        }
+
         level.animate(step, arrows);
         display.drawFrame(step);
         if (level.isFinished()) {
             display.clear();
+            removeEventListener("keydown", handleKey);
+            arrows.unregister();
             if (andThen)
                 andThen(level.status);
             return false;
         }
-    });
+    }
+    runAnimation(animation);
 }
 
 function runGame(plans, Display) {
