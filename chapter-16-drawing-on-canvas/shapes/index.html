@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Shapes</title>
+</head>
+
+<body>
+    <canvas width="600" height="200"></canvas>
+
+    <script>
+        var cx = document.querySelector('canvas').getContext('2d');
+
+        function drawTrapezoid() {
+            cx.beginPath();
+            cx.moveTo(10, 10);
+            cx.lineTo(30, 10);
+            cx.lineTo(40, 30);
+            cx.lineTo(0, 30);
+            cx.closePath();
+            cx.stroke();
+        }
+
+        function drawDiamond(sideSize, color, rotation) {
+            cx.fillStyle = color;
+            cx.translate(70, 7);
+            cx.rotate(rotation);
+            cx.fillRect(0, 0, sideSize, sideSize);
+        }
+
+        function drawZigZag(x, y) {
+            cx.beginPath();
+            cx.moveTo(x, y);
+
+            for (var i = 0; i < 10; i++) {
+                cx.lineTo(x + 100, y + i * 10 + 5);
+                cx.lineTo(x, y + i * 10 + 10)
+            }
+            cx.stroke()
+        }
+
+        function drawSpiral(segments, x, y) {
+            cx.beginPath();
+            var radius = 50;
+            xStart = x + radius;
+            yStart = y + radius;
+            cx.moveTo(xStart, yStart);
+
+            for (var i = 0; i < segments; i++) {
+                var angle = i * Math.PI / 10;
+                var dist = i * radius / 100;
+                cx.lineTo(xStart + Math.cos(angle) * dist, yStart + Math.sin(angle) * dist);
+            }
+            cx.stroke();
+        }
+
+        function drawStar(x, y, color) {
+            var radius = 50,
+                xStart = x + radius,
+                yStart = y + radius;
+            cx.beginPath();
+            cx.moveTo(xStart + radius, yStart);
+            for (var i = 1; i <= 8; i++) {
+                var angle = i * Math.PI / 4;
+                cx.quadraticCurveTo(xStart, yStart, xStart + Math.cos(angle) * radius, yStart + Math.sin(angle) *
+                    radius);
+            }
+            cx.fillStyle = color;
+            cx.fill();
+        }
+    </script>
+</body>
+
+</html>
