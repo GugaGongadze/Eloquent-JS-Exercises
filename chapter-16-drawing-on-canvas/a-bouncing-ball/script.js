@@ -10,16 +10,6 @@ function frame(time) {
 }
 requestAnimationFrame(frame);
 
-function Vector(x, y) {
-    this.x = x;
-    this.y = y;
-}
-Vector.prototype.plus = function (other) {
-    return new Vector(this.x + other.x, this.y + other.y);
-};
-Vector.prototype.times = function (factor) {
-    return new Vector(this.x * factor, this.y * factor);
-};
 var ballX = 100;
 var ballY = 100;
 var speedX = 100;
@@ -41,7 +31,4 @@ function updateAnimation(step) {
     cx.beginPath();
     cx.arc(ballX, ballY, 50, 0, 7);
     cx.fill();
-
-    var ball = new Vector(ballX, ballY);
-    // ball.x = ;
 }
