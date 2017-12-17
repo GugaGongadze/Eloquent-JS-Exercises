@@ -217,6 +217,24 @@ tools.Rectangle = function (event, cx) {
         document.body.removeChild(trackingNode);
     });
 };
+tools['Pick color'] = function (event, cx) {
+    var currentPos = relativePos(event, cx.canvas);
+    try {
+        var fill = pixelAt(cx, currentPos.x, currentPos.y);
+        cx.fillStyle = fill;
+        cx.strokeStyle = fill;
+    } catch (e) {
+        if (e instanceof SecurityError)
+            alert('Invalid operation: ');
+        else
+            throw e;
+    }
+};
+
+function pixelAt(cx, x, y) {
+    var data = cx.getImageData(x, y, 1, 1).data;
+    return 'rgb(' + data[0] + ', ' + data[1] + ', ' + data[2] + ')';
+}
 
 function rectangleFrom(a, b) {
     return {
