@@ -94,6 +94,36 @@ controls.save = function (cx) {
     link.addEventListener('focus', update);
     return link;
 };
+controls.openFile = function (cx) {
+    var input = elt('input', {
+        type: 'file'
+    });
+    input.addEventListener('change', function () {
+        if (input.files.length == 0) return;
+        var reader = new FileReader();
+        reader.addEventListener('load', function () {
+            loadImageURL(cx, reader.result);
+        });
+        reader.readAsDataURL(input.files[0]);
+    });
+    return elt('div', null, 'Open file: ', input);
+};
+controls.openURL = function (cx) {
+    var input = elt('input', {
+        type: 'text'
+    });
+    var form = elt(
+        'form', null, 'Open URL: ', input,
+        elt('button', {
+            type: 'submit'
+        }, 'Load')
+    );
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        loadImageURL(cx, input.value);
+    });
+    return form;
+};
 
 function relativePos(event, element) {
     var rect = element.getBoundingClientRect();
@@ -132,5 +162,28 @@ tools.Erase = function (event, cx) {
         cx.globalCompositeOperation = "source-over";
     });
 };
+tools.Text = function (event, cx) {
+    var text = prompt('Text: ', '');
+    if (text) {
+        var pos = relativePos(event, cx.canvas);
+        cx.font = Math.max(7, cx.lineWidth) + 'px sans-serif';
+        cx.fillText(text, pos.x, pos.y);
+    }
+};
+
+function loadImageURL(cx, url) {
+    var image = document.createElement('img');
+    image.addEventListener('load', function () {
+        var color = cx.fillStyle,
+            size = cx.lineWidth;
+        cx.canvas.height = image.height;
+        cx.canvas.width = image.width;
+        cx.drawImage(image, 0, 0);
+        cx.fillStyle = color;
+        cx.strokeStyle = color;
+        cx.lineWidth = size;
+    });
+    image.src = url;
+}
 
 createPaint(document.body);
