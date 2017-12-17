@@ -61,16 +61,38 @@ controls.color = function (cx) {
     });
     return elt('span', null, 'Color: ', input);
 };
-controls.brushSize = function(cx) {
+controls.brushSize = function (cx) {
     var select = elt('select');
     var sizes = [1, 2, 3, 5, 8, 12, 25, 35, 50, 75, 100];
-    sizes.forEach(function(size) {
-        select.appendChild(elt('option', { value: size }, size + ' pixels'));
+    sizes.forEach(function (size) {
+        select.appendChild(elt('option', {
+            value: size
+        }, size + ' pixels'));
     });
-    select.addEventListener('change', function() {
+    select.addEventListener('change', function () {
         cx.lineWidth = select.value;
     });
     return elt('span', null, 'Brush size: ', select);
+};
+controls.save = function (cx) {
+    var link = elt('a', {
+        href: '/'
+    }, 'Save');
+
+    function update() {
+        try {
+            link.href = cx.canvas.toDataURL();
+        } catch (e) {
+            if (e instanceof SecurityError)
+                link.href = 'javascript:alert(' +
+                JSON.stringify('Can\'t save: ' + e.toString()) + ')';
+            else
+                throw e;
+        }
+    }
+    link.addEventListener('mouseover', update);
+    link.addEventListener('focus', update);
+    return link;
 };
 
 function relativePos(event, element) {
