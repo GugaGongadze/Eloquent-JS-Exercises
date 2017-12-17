@@ -170,6 +170,37 @@ tools.Text = function (event, cx) {
         cx.fillText(text, pos.x, pos.y);
     }
 };
+tools.Spray = function(event, cx) {
+    var radius = cx.lineWidth / 2;
+    var area = radius * radius * Math.PI;
+    var dotsPerTick = Math.ceil(area / 30);
+
+    var currentPos = relativePos(event, cx.canvas);
+    var spray = setInterval(function() {
+        for (var i = 0; i < dotsPerTick; i++) {
+            var offset = randomPointInRadius(radius);
+            cx.fillRect(currentPos.x + offset.x,
+                        currentPos.y + offset.y, 1, 1);
+        }
+    }, 25);
+    trackDrag(function(event) {
+        currentPos = relativePos(event, cx.canvas);
+    }, function() {
+        clearInterval(spray);
+    });
+};
+
+function randomPointInRadius(radius) {
+    for (;;) {
+        var x = Math.random() * 2 - 1;
+        var y = Math.random() * 2 - 1;
+        if (x * x + y * y <= 1)
+            return {
+                x: x * radius,
+                y: y * radius
+            };
+    }
+}
 
 function loadImageURL(cx, url) {
     var image = document.createElement('img');
