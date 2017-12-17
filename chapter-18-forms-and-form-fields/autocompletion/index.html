@@ -1,0 +1,49 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Autocompletion</title>
+</head>
+
+<body>
+    <input type="text" id="field">
+    <div id="suggestions" style="cursor: pointer"></div>
+
+    <script>
+        var terms = [];
+        for (var name in window)
+            terms.push(name);
+
+        var suggestions = document.querySelector('#suggestions');
+
+        function addToDiv(term) {
+            var node = document.createElement('h5');
+            node.textContent = term;
+            suggestions.appendChild(node);
+            node.addEventListener('click', function () {
+                clearDiv();
+                input.value = node.textContent;
+            });
+        }
+
+        function clearDiv() {
+            while (suggestions.firstChild) {
+                suggestions.removeChild(suggestions.firstChild);
+            }
+        }
+
+        var input = document.querySelector('#field');
+        document.querySelector('#field').addEventListener('input', function () {
+            clearDiv();
+            for (var i = 0; i < terms.length; i++) {
+                if (input.value == terms[i][0]) {
+                    addToDiv(terms[i]);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
