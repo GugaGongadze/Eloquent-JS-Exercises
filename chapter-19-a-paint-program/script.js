@@ -51,6 +51,27 @@ controls.tool = function (cx) {
 
     return elt('span', null, 'Tool: ', select);
 };
+controls.color = function (cx) {
+    var input = elt('input', {
+        type: 'color'
+    });
+    input.addEventListener('change', function () {
+        cx.fillStyle = input.value;
+        cx.strokeStyle = input.value;
+    });
+    return elt('span', null, 'Color: ', input);
+};
+controls.brushSize = function(cx) {
+    var select = elt('select');
+    var sizes = [1, 2, 3, 5, 8, 12, 25, 35, 50, 75, 100];
+    sizes.forEach(function(size) {
+        select.appendChild(elt('option', { value: size }, size + ' pixels'));
+    });
+    select.addEventListener('change', function() {
+        cx.lineWidth = select.value;
+    });
+    return elt('span', null, 'Brush size: ', select);
+};
 
 function relativePos(event, element) {
     var rect = element.getBoundingClientRect();
