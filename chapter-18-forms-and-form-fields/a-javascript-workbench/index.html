@@ -1,0 +1,32 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>A JavaScript Workbench</title>
+</head>
+
+<body>
+    <textarea id="code">return "hi";</textarea>
+    <button id="button">Run</button>
+    <pre id="output"></pre>
+
+    <script>
+        var input = document.querySelector('#code');
+        var button = document.querySelector('#button');
+        var output = document.querySelector('#output');
+        var code = input.value;
+
+        button.addEventListener('click', function () {
+            try {
+                var res = new Function(code)();
+                output.innerHTML = res;
+            } catch (e) {
+                output.innerHTML = 'Error: ' + e;
+            }
+        });
+    </script>
+</body>
+
+</html>
