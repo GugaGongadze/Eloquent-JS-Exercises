@@ -230,6 +230,61 @@ tools['Pick color'] = function (event, cx) {
             throw e;
     }
 };
+tools['Flood fill'] = function (event, cx) {
+    var currentPos = relativePos(event, cx.canvas);
+    var data = cx.getImageData(0, 0, cx.canvas.width, cx.canvas.height);
+
+    var colored = new Array(data.width * data.height);
+
+    var workList = [currentPos];
+    while (workList.length) {
+        var pos = workList.pop();
+        var offset = pos.x + data.width * pos.y;
+        if (colored[offset]) continue;
+
+        cx.fillRect(pos.x, pos.y, 1, 1);
+        colored[offset] = true;
+
+        forAllNeighbors(pos, function (neighbor) {
+            if (neighbor.x >= 0 && neighbor.x < data.width &&
+                neighbor.y >= 0 && neighbor.y < data.height &&
+                isSameColor(data, currentPos, neighbor))
+                workList.push(neighbor);
+        });
+    }
+}
+
+function forAllNeighbors(point, f) {
+    f({
+        x: point.x,
+        y: point.y + 1
+    });
+    f({
+        x: point.x,
+        y: point.y - 1
+    });
+    f({
+        x: point.x + 1,
+        y: point.y
+    });
+
+    f({
+        x: point.x - 1,
+        y: point.y
+    });
+
+}
+
+function isSameColor(data, pos1, pos2) {
+    var offset1 = (pos1.x + pos1.y * data.width) * 4;
+    var offset2 = (pos2.x + pos2.y * data.width) * 4;
+
+    for (var i = 0; i < 4; i++) {
+        if (data.data[offset1 + i] != data.data[offset2 + i])
+            return false;
+    }
+    return true;
+}
 
 function pixelAt(cx, x, y) {
     var data = cx.getImageData(x, y, 1, 1).data;
