@@ -1,11 +1,19 @@
 var http = require("http");
 var Router = require("./router");
 var ecstatic = require("ecstatic");
+var fs = require("fs");
 
-var fileServer = ecstatic({root: "./public"});
+fs.readFile('talks.json', 'utf8', function(error, content) {
+  if (error) throw error;
+  console.log(JSON.parse(content));
+})
+
+var fileServer = ecstatic({
+  root: "./public"
+});
 var router = new Router();
 
-http.createServer(function(request, response) {
+http.createServer(function (request, response) {
   if (!router.resolve(request, response))
     fileServer(request, response);
 }).listen(8000);
@@ -19,82 +27,93 @@ function respond(response, status, data, type) {
 
 function respondJSON(response, status, data) {
   respond(response, status, JSON.stringify(data),
-          "application/json");
+    "application/json");
 }
 
 var talks = Object.create(null);
 
 router.add("GET", /^\/talks\/([^\/]+)$/,
-           function(request, response, title) {
-  if (title in talks)
-    respondJSON(response, 200, talks[title]);
-  else
-    respond(response, 404, "No talk '" + title + "' found");
-});
+  function (request, response, title) {
+    if (title in talks)
+      respondJSON(response, 200, talks[title]);
+    else
+      respond(response, 404, "No talk '" + title + "' found");
+  });
 
 router.add("DELETE", /^\/talks\/([^\/]+)$/,
-           function(request, response, title) {
-  if (title in talks) {
-    delete talks[title];
-    registerChange(title);
-  }
-  respond(response, 204, null);
-});
+  function (request, response, title) {
+    if (title in talks) {
+      delete talks[title];
+      registerChange(title);
+    }
+    respond(response, 204, null);
+  });
 
 function readStreamAsJSON(stream, callback) {
   var data = "";
-  stream.on("data", function(chunk) {
+  stream.on("data", function (chunk) {
     data += chunk;
   });
-  stream.on("end", function() {
+  stream.on("end", function () {
     var result, error;
-    try { result = JSON.parse(data); }
-    catch (e) { error = e; }
+    try {
+      result = JSON.parse(data);
+    } catch (e) {
+      error = e;
+    }
     callback(error, result);
   });
-  stream.on("error", function(error) {
+  stream.on("error", function (error) {
     callback(error);
   });
 }
 
 router.add("PUT", /^\/talks\/([^\/]+)$/,
-           function(request, response, title) {
-  readStreamAsJSON(request, function(error, talk) {
-    if (error) {
-      respond(response, 400, error.toString());
-    } else if (!talk ||
-               typeof talk.presenter != "string" ||
-               typeof talk.summary != "string") {
-      respond(response, 400, "Bad talk data");
-    } else {
-      talks[title] = {title: title,
-                      presenter: talk.presenter,
-                      summary: talk.summary,
-                      comments: []};
-      registerChange(title);
-      respond(response, 204, null);
-    }
+  function (request, response, title) {
+    readStreamAsJSON(request, function (error, talk) {
+      if (error) {
+        respond(response, 400, error.toString());
+      } else if (!talk ||
+        typeof talk.presenter != "string" ||
+        typeof talk.summary != "string") {
+        respond(response, 400, "Bad talk data");
+      } else {
+        talks[title] = {
+          title: title,
+          presenter: talk.presenter,
+          summary: talk.summary,
+          comments: []
+        };
+        fs.writeFile('talks.json', 'utf8', JSON.stringify(talks[title]), function(err) {
+          if (err)
+            console.log('Failed to write file:', err);
+          else
+            console.log('File written');
+        });
+        registerChange(title);
+        respond(response, 204, null);
+      }
+    });
   });
-});
 
 router.add("POST", /^\/talks\/([^\/]+)\/comments$/,
-           function(request, response, title) {
-  readStreamAsJSON(request, function(error, comment) {
-    if (error) {
-      respond(response, 400, error.toString());
-    } else if (!comment ||
-               typeof comment.author != "string" ||
-               typeof comment.message != "string") {
-      respond(response, 400, "Bad comment data");
-    } else if (title in talks) {
-      talks[title].comments.push(comment);
-      registerChange(title);
-      respond(response, 204, null);
-    } else {
-      respond(response, 404, "No talk '" + title + "' found");
-    }
+  function (request, response, title) {
+    readStreamAsJSON(request, function (error, comment) {
+      if (error) {
+        respond(response, 400, error.toString());
+      } else if (!comment ||
+        typeof comment.author != "string" ||
+        typeof comment.message != "string") {
+        respond(response, 400, "Bad comment data");
+      } else if (title in talks) {
+        talks[title].comments.push(comment);
+        registerChange(title);
+        respond(response, 204, null);
+      } else {
+        respond(response, 404, "No talk '" + title + "' found");
+      }
+    });
   });
-});
 
 function sendTalks(talks, response) {
   respondJSON(response, 200, {
@@ -103,7 +122,7 @@ function sendTalks(talks, response) {
   });
 }
 
-router.add("GET", /^\/talks$/, function(request, response) {
+router.add("GET", /^\/talks$/, function (request, response) {
   var query = require("url").parse(request.url, true).query;
   if (query.changesSince == null) {
     var list = [];
@@ -117,7 +136,7 @@ router.add("GET", /^\/talks$/, function(request, response) {
     } else {
       var changed = getChangedTalks(since);
       if (changed.length > 0)
-         sendTalks(changed, response);
+        sendTalks(changed, response);
       else
         waitForChanges(since, response);
     }
@@ -127,9 +146,12 @@ router.add("GET", /^\/talks$/, function(request, response) {
 var waiting = [];
 
 function waitForChanges(since, response) {
-  var waiter = {since: since, response: response};
+  var waiter = {
+    since: since,
+    response: response
+  };
   waiting.push(waiter);
-  setTimeout(function() {
+  setTimeout(function () {
     var found = waiting.indexOf(waiter);
     if (found > -1) {
       waiting.splice(found, 1);
@@ -141,8 +163,11 @@ function waitForChanges(since, response) {
 var changes = [];
 
 function registerChange(title) {
-  changes.push({title: title, time: Date.now()});
-  waiting.forEach(function(waiter) {
+  changes.push({
+    title: title,
+    time: Date.now()
+  });
+  waiting.forEach(function (waiter) {
     sendTalks(getChangedTalks(waiter.since), waiter.response);
   });
   waiting = [];
@@ -150,8 +175,11 @@ function registerChange(title) {
 
 function getChangedTalks(since) {
   var found = [];
+
   function alreadySeen(title) {
-    return found.some(function(f) {return f.title == title;});
+    return found.some(function (f) {
+      return f.title == title;
+    });
   }
   for (var i = changes.length - 1; i >= 0; i--) {
     var change = changes[i];
@@ -162,7 +190,10 @@ function getChangedTalks(since) {
     else if (change.title in talks)
       found.push(talks[change.title]);
     else
-      found.push({title: change.title, deleted: true});
+      found.push({
+        title: change.title,
+        deleted: true
+      });
   }
   return found;
 }
