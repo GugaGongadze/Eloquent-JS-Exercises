@@ -1,9 +1,18 @@
 var http = require("http");
 var Router = require("./router");
 var ecstatic = require("ecstatic");
-
+var fs = require('fs');
 var fileServer = ecstatic({root: "./public"});
 var router = new Router();
+var talks = loadTalks();
+
+function loadTalks() {
+  var result = Object.create(null);
+  json = JSON.parse(fs.readFileSync('talks.json', 'utf8'));
+  for (var title in json)
+    result[title] = json[title]
+  return result;
+}
 
 http.createServer(function(request, response) {
   if (!router.resolve(request, response))
@@ -21,8 +30,6 @@ function respondJSON(response, status, data) {
   respond(response, status, JSON.stringify(data),
           "application/json");
 }
-
-var talks = Object.create(null);
 
 router.add("GET", /^\/talks\/([^\/]+)$/,
            function(request, response, title) {
@@ -146,6 +153,8 @@ function registerChange(title) {
     sendTalks(getChangedTalks(waiter.since), waiter.response);
   });
   waiting = [];
+
+  fs.writeFile('talks.json', JSON.stringify(talks));
 }
 
 function getChangedTalks(since) {
