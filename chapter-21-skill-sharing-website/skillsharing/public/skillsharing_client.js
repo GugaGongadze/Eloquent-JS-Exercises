@@ -44,10 +44,17 @@ function displayTalks(talks) {
       }
     } else {
       var node = drawTalk(talk);
-      if (shown)
+      if (shown) {
+        var textField = shown.querySelector('input');
+        var hasFocus = document.activeElement == textField;
+        var value = textField.value;
         talkDiv.replaceChild(node, shown);
-      else
+        var newtextField = node.querySelector('input');
+        newtextField.value = value;
+        if (hasFocus) newtextField.focus();
+      } else {
         talkDiv.appendChild(node);
+      }
       shownTalks[talk.title] = node;
     }
   });
